@@ -21,6 +21,7 @@ public class TenantIdPropagatorFilterFactory extends AbstractGatewayFilterFactor
     @Override
     public GatewayFilter apply(Config config) {
         return (exchange, chain) ->
+
                 ReactiveSecurityContextHolder.getContext()
                         .map(SecurityContext::getAuthentication)
                         .filter(auth -> auth instanceof JwtAuthenticationToken)

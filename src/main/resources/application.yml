@@ -57,6 +57,58 @@ spring:
                 name: productServiceCB
                 fallbackUri: forward:/fallback/product
 
+        # ?? Inventory-Service: protected (role check + rate-limit + CB) ??
+        - id: inventory-service
+          uri: http://localhost:9006
+          predicates:
+            - Path=/api/v1/inventory/**, /api/v1/inventory/**
+          filters:
+            - name: RoleFilterFactory          # ? separate name
+              args:
+                roles: ADMIN,MERCHANT          # ? roles passed here
+            - name: RequestRateLimiter
+              args:
+                redis-rate-limiter.replenishRate: 5
+                redis-rate-limiter.burstCapacity: 10
+            - name: CircuitBreaker
+              args:
+                name: inventoryServiceCB
+                fallbackUri: forward:/fallback/inventory
+
+        # ?? Payment-Service: protected (role check + rate-limit + CB) ??
+        - id: payment-service
+          uri: http://localhost:9004
+          predicates:
+            - Path=/api/v1/payments/**
+          filters:
+            - name: RoleFilterFactory          # ? separate name
+              args:
+                roles: ADMIN,MERCHANT          # ? roles passed here
+            - name: RequestRateLimiter
+              args:
+                redis-rate-limiter.replenishRate: 5
+                redis-rate-limiter.burstCapacity: 10
+            - name: CircuitBreaker
+              args:
+                name: paymentServiceCB
+                fallbackUri: forward:/fallback/payment
+        # ?? Payment-Service: protected (role check + rate-limit + CB) ??
+        - id: FlowTrack
+          uri: http://localhost:9010
+          predicates:
+            - Path=/api/v1/flowtrack/**
+          filters:
+            - name: RoleFilterFactory          # ? separate name
+              args:
+                roles: ADMIN,MERCHANT          # ? roles passed here
+            - name: RequestRateLimiter
+              args:
+                redis-rate-limiter.replenishRate: 5
+                redis-rate-limiter.burstCapacity: 10
+            - name: CircuitBreaker
+              args:
+                name: FlowTrackCB
+                fallbackUri: forward:/fallback/flowtrack
       # ?? Global CORS ???????????????????????????????????????????????????
       globalcors:
         corsConfigurations:
